@@ -19,6 +19,8 @@
   "homepage": "https://github.com/prachivishnoi27/textscrapper#readme",
   "dependencies": {
     "@google-cloud/vision": "^2.3.5",
-    "active-win": "^7.6.0"
+    "jimp": "^0.16.1",
+    "screenshot-desktop": "^1.12.6",
+    "win32-api": "^9.6.0"
   }
 }
