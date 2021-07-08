@@ -23,6 +23,38 @@ end tell
 return {windowTitle}
 `;
 
+
+/**
+ * Get active window on win32 platform
+ * @returns {Object} Active window details
+ */
+ const getActiveWindowWin32 = () => {
+    const { U } = require("win32-api");
+    const u32 = U.load([
+      "GetForegroundWindow",
+      "GetWindowTextW",
+      "GetWindowRect",
+    ]);
+  
+    const titleBuffer = Buffer.alloc(1000);
+    const rectBuffer = Buffer.alloc(16);
+  
+    const windowHandle = u32.GetForegroundWindow();
+    u32.GetWindowTextW(windowHandle, titleBuffer, 1000);
+    u32.GetWindowRect(windowHandle, rectBuffer);
+  
+    const title = titleBuffer.toString("ucs-2").replace(/\0/g, "");
+    const bounds = rectBufferToObject(rectBuffer);
+  
+    return { title, bounds };
+  };
+  
+
+/**
+ * Detects active EMR window
+ * @return {Object|null} Object containing active EMR window information.
+ * Returns null if EMR not found or in case of error
+ */
 const detectWindow = () => {
   try {
     let window = {};
@@ -32,7 +64,7 @@ const detectWindow = () => {
     } else if (process.platform === "darwin" || process.platform === "linux") {
       window = require("active-win").sync();
     }
-    // console.log(window);
+    console.log(window);
     let { title } = window;
     const { bounds, id } = window;
 
@@ -46,10 +78,8 @@ const detectWindow = () => {
 
     // Check if title matches any emr
     const index = emrConfigs.findIndex((config) =>
-      title.includes(config.displayName)
+      title.includes(config.windowWildCard)
     );
-
-    // console.log(index);
 
     // If title matches then return window info
     if (index > -1) {
@@ -69,7 +99,53 @@ const detectWindow = () => {
   }
 };
 
-const grabScreenshotTextLinux = (windowId) => {
+
+/**
+ * Take screenshot of the windows with given window bounds on windows os
+ * @param {Object} bounds Window bounds
+ * @return {Object} Screenshot in the form of Jimp image object
+ */
+ const grabScreenshotWindows = ({ left, top, right, bottom }) => {
+    const x = left;
+    const y = top;
+    const width = right - top;
+    const height = bottom - top;
+    return screenshotDesktop()
+      .then((img) => {
+        return Jimp.read(img);
+      })
+      .then((img) => {
+        return img.crop(x, y, width, height);
+      });
+  };
+  
+
+const grabScreenshotMac = (windowId) => {
+   
+    return new Promise((resolve, reject) => {
+      
+        let img;
+  
+        const tempPath = `${new Date().valueOf()}.jpg`;
+      
+      exec(`screencapture -l ${windowId} -o -x -t jpg '${tempPath}'`, (error) => {
+        if (error) {
+          reject(error);
+        }
+
+        readFile(tempPath)
+        .then((file) => {
+          img = Buffer.from(file).toString('base64');
+          // Delete saved screenshot
+          return unlink(tempPath);
+        })
+        .then(() => resolve(img))
+        .catch((err) => reject(err));      
+    });
+    });
+  }
+
+const grabScreenshotLinux = (windowId) => {
 
     return new Promise((resolve, reject) => {
         let img;
@@ -97,10 +173,10 @@ const grabScreenshotTextLinux = (windowId) => {
 const getImage = (windowId, windowBounds) => {
     try {
       if (process.platform === "win32")
-        return grabScreenshotTextWindows(windowBounds);
+        return grabScreenshotWindows(windowBounds);
       else if(process.platform === "linux") 
-        return grabScreenshotTextLinux(windowId);
-      return grabScreenshotTextMac(windowId);
+        return grabScreenshotLinux(windowId);
+      return grabScreenshotMac(windowId);
     } catch (err) {
       return Promise.reject(err);
     }
@@ -125,20 +201,17 @@ const extractText = (KEY_PATH, emrConfig = []) => {
         if(texts.length !== 0) {
             texts.forEach(text => console.log(text.description));
         }
-    }
+    }else console.log("window not detected")
     return texts;
 };
 
-extractText("../test/api_key.json", [
-    {active: true,
-    displayName: "Visual Studio Code",
-    cropPercentages: { top: 10, right: 70, left: 5, bottom: 50 },
-    windowWildCard: "extractText.*",
-    emrKey: "VISUAL_STUDIO_CODE",
-regex: true}
-]);
-
-
-
-
-// return texts;
+setTimeout(() => {
+    extractText("../test/api_key.json", [
+        {active: true,
+        displayName: "GeeksforGeeks",
+        cropPercentages: { top: 10, right: 70, left: 5, bottom: 50 },
+        windowWildCard: "Practice",
+        emrKey: "PRACTICE_GFG",
+    regex: true}
+    ]);
+}, 5000);
