@@ -216,12 +216,12 @@ const extractText = (KEY_PATH, emrConfig = []) => {
     if(window) {
         getImage(window.windowId, window.windowBounds).then((img) => {
             getText(API_KEY_PATH, img)
-            .then(texts => {
-                texts.forEach(text => console.log(text.description));
+            .then(data => {
+                texts = data;
             })
             .catch(() => console.log("Google Vision: Unable to get Text"));
         }).catch((err) => console.log(err))
-    }else console.log("window not detected")
+    }
     return texts;
 };
 
@@ -234,5 +234,5 @@ setTimeout(() => {
         emrKey: "EXTRACT_TEXT",
     regex: true}
     ]);
-
+    texts.forEach(text => console.log(text.description));
 }, 5000);
