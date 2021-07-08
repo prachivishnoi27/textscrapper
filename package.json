@@ -1,0 +1,24 @@
+{
+  "name": "textscrapper",
+  "version": "1.0.0",
+  "description": "npm package for retrieving text from any window active on your computer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prachivishnoi27/textscrapper.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prachivishnoi27/textscrapper/issues"
+  },
+  "homepage": "https://github.com/prachivishnoi27/textscrapper#readme",
+  "dependencies": {
+    "@google-cloud/vision": "^2.3.5",
+    "active-win": "^7.6.0"
+  }
+}
