@@ -1,8 +1,5 @@
 const getText = require("./googleVisionAPI");
 const { exec, execSync } = require("child_process");
-const { readFile, unlink } = require("fs").promises;
-const Jimp = require("jimp");
-const screenshotDesktop = require("screenshot-desktop")
 
 let API_KEY_PATH = "";
 
@@ -82,7 +79,7 @@ const detectWindow = () => {
     } else if (process.platform === "darwin" || process.platform === "linux") {
       window = require("active-win").sync();
     }
-    console.log(window);
+    // console.log(window);
     let { title } = window;
     const { bounds, id } = window;
 
@@ -98,6 +95,8 @@ const detectWindow = () => {
     const index = emrConfigs.findIndex((config) =>
       title.includes(config.windowWildCard)
     );
+
+    // console.log(index);
 
     // If title matches then return window info
     if (index > -1) {
@@ -128,6 +127,8 @@ const detectWindow = () => {
     const y = top;
     const width = right - top;
     const height = bottom - top;
+    const Jimp = require("jimp");
+    const screenshotDesktop = require("screenshot-desktop")
     return screenshotDesktop()
       .then((img) => {
         return Jimp.read(img);
@@ -156,6 +157,7 @@ const grabScreenshotMac = (windowId) => {
         if (error) {
           reject(error);
         }
+        const { readFile, unlink } = require("fs").promises;
 
         readFile(tempPath)
         .then((file) => {
@@ -180,6 +182,8 @@ const grabScreenshotLinux = (windowId) => {
         if (error) {
           reject(error);
         }
+
+        const { readFile, unlink } = require("fs").promises;
 
         readFile(tempPath)
         .then((file) => {
@@ -217,12 +221,13 @@ const extractText = (KEY_PATH, emrConfig = []) => {
         getImage(window.windowId, window.windowBounds).then((img) => {
             getText(API_KEY_PATH, img)
             .then(data => {
-                texts = data;
+                // texts = data;
+                console.log(texts);
+                return data;
             })
             .catch(() => console.log("Google Vision: Unable to get Text"));
         }).catch((err) => console.log(err))
     }
-    return texts;
 };
 
 setTimeout(() => {
@@ -234,5 +239,5 @@ setTimeout(() => {
         emrKey: "EXTRACT_TEXT",
     regex: true}
     ]);
-    texts.forEach(text => console.log(text.description));
+    // if(texts !== undefined) texts.forEach(text => console.log(text.description));
 }, 5000);
