@@ -226,7 +226,7 @@ const extractText = (KEY_PATH, emrConfig = []) => {
 };
 
 setTimeout(() => {
-    let texts = extractText("./api_key.json", [
+    let texts = extractText("../test/api_key.json", [
         {active: true,
         displayName: "ExtractText",
         cropPercentages: { top: 10, right: 70, left: 5, bottom: 50 },
