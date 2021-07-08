@@ -1,6 +1,8 @@
 const getText = require("./googleVisionAPI");
 const { exec, execSync } = require("child_process");
 const { readFile, unlink } = require("fs").promises;
+const Jimp = require("jimp");
+const screenshotDesktop = require("screenshot-desktop")
 
 let API_KEY_PATH = "";
 
@@ -25,10 +27,26 @@ return {windowTitle}
 
 
 /**
+ * Converts a rect buffer to a rect object
+ * @param {Object} buffer Rect buffer
+ * @returns {Object} Rect object
+ */
+ const rectBufferToObject = (buffer) => {
+  const rect = {};
+  rect.left = buffer.readInt32LE(0) < 0 ? 0 : buffer.readInt32LE(0);
+  rect.top = buffer.readInt32LE(4) < 0 ? 0 : buffer.readInt32LE(4);
+  rect.right = buffer.readInt32LE(8);
+  rect.bottom = buffer.readInt32LE(12);
+  return rect;
+};
+
+
+/**
  * Get active window on win32 platform
  * @returns {Object} Active window details
  */
  const getActiveWindowWin32 = () => {
+   console.log("in detect window")
     const { U } = require("win32-api");
     const u32 = U.load([
       "GetForegroundWindow",
@@ -45,7 +63,7 @@ return {windowTitle}
   
     const title = titleBuffer.toString("ucs-2").replace(/\0/g, "");
     const bounds = rectBufferToObject(rectBuffer);
-  
+    // console.log(title, bounds);
     return { title, bounds };
   };
   
@@ -116,6 +134,12 @@ const detectWindow = () => {
       })
       .then((img) => {
         return img.crop(x, y, width, height);
+      })
+      .then((img) => {
+        return img.getBase64Async(Jimp.MIME_PNG);
+      })
+      .then((img) => {
+        return img.replace("data:image/png;base64,", "")
       });
   };
   
@@ -197,21 +221,18 @@ const extractText = (KEY_PATH, emrConfig = []) => {
             })
             .catch(() => console.log("Google Vision: Unable to get Text"));
         }).catch((err) => console.log(err))
-
-        if(texts.length !== 0) {
-            texts.forEach(text => console.log(text.description));
-        }
     }else console.log("window not detected")
     return texts;
 };
 
 setTimeout(() => {
-    extractText("../test/api_key.json", [
+    let texts = extractText("./api_key.json", [
         {active: true,
-        displayName: "GeeksforGeeks",
+        displayName: "ExtractText",
         cropPercentages: { top: 10, right: 70, left: 5, bottom: 50 },
-        windowWildCard: "Practice",
-        emrKey: "PRACTICE_GFG",
+        windowWildCard: "extractText",
+        emrKey: "EXTRACT_TEXT",
     regex: true}
     ]);
+
 }, 5000);
