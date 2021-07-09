@@ -55,7 +55,3 @@ async printText () => {
 
 ## License
 MIT
-
-## Keywords
-
-**screenshot** **extract text** **google cloud vision API**

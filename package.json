@@ -10,7 +10,11 @@
     "type": "git",
     "url": "git+https://github.com/prachivishnoi27/textscrapper.git"
   },
-  "keywords": [],
+  "keywords": [
+    "screenshot",
+    "extract text",
+    "google cloud vision API"
+  ],
   "author": "Prachi Vishnoi",
   "license": "MIT",
   "bugs": {
