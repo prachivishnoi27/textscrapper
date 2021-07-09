@@ -1,18 +1,18 @@
 {
   "name": "textscrapper",
   "version": "1.0.0",
-  "description": "npm package for retrieving text from any window active on your computer",
+  "description": "Get text scrapped from any active window on your desktop",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/prachivishnoi27/textscrapper.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Prachi Vishnoi",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/prachivishnoi27/textscrapper/issues"
   },

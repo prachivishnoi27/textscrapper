@@ -22,13 +22,12 @@ end tell
 return {windowTitle}
 `;
 
-
 /**
  * Converts a rect buffer to a rect object
  * @param {Object} buffer Rect buffer
  * @returns {Object} Rect object
  */
- const rectBufferToObject = (buffer) => {
+const rectBufferToObject = (buffer) => {
   const rect = {};
   rect.left = buffer.readInt32LE(0) < 0 ? 0 : buffer.readInt32LE(0);
   rect.top = buffer.readInt32LE(4) < 0 ? 0 : buffer.readInt32LE(4);
@@ -37,33 +36,31 @@ return {windowTitle}
   return rect;
 };
 
-
 /**
  * Get active window on win32 platform
  * @returns {Object} Active window details
  */
- const getActiveWindowWin32 = () => {
-   console.log("in detect window")
-    const { U } = require("win32-api");
-    const u32 = U.load([
-      "GetForegroundWindow",
-      "GetWindowTextW",
-      "GetWindowRect",
-    ]);
-  
-    const titleBuffer = Buffer.alloc(1000);
-    const rectBuffer = Buffer.alloc(16);
-  
-    const windowHandle = u32.GetForegroundWindow();
-    u32.GetWindowTextW(windowHandle, titleBuffer, 1000);
-    u32.GetWindowRect(windowHandle, rectBuffer);
-  
-    const title = titleBuffer.toString("ucs-2").replace(/\0/g, "");
-    const bounds = rectBufferToObject(rectBuffer);
-    // console.log(title, bounds);
-    return { title, bounds };
-  };
-  
+const getActiveWindowWin32 = () => {
+  console.log("in detect window");
+  const { U } = require("win32-api");
+  const u32 = U.load([
+    "GetForegroundWindow",
+    "GetWindowTextW",
+    "GetWindowRect",
+  ]);
+
+  const titleBuffer = Buffer.alloc(1000);
+  const rectBuffer = Buffer.alloc(16);
+
+  const windowHandle = u32.GetForegroundWindow();
+  u32.GetWindowTextW(windowHandle, titleBuffer, 1000);
+  u32.GetWindowRect(windowHandle, rectBuffer);
+
+  const title = titleBuffer.toString("ucs-2").replace(/\0/g, "");
+  const bounds = rectBufferToObject(rectBuffer);
+  // console.log(title, bounds);
+  return { title, bounds };
+};
 
 /**
  * Detects active EMR window
@@ -91,12 +88,18 @@ const detectWindow = () => {
       } catch {}
     }
 
+    if(emrConfigs.length === 0) {
+      return {
+        windowId: id,
+        windowTitle: title,
+        windowBounds: bounds
+      }
+    }
+
     // Check if title matches any emr
     const index = emrConfigs.findIndex((config) =>
       title.includes(config.windowWildCard)
     );
-
-    // console.log(index);
 
     // If title matches then return window info
     if (index > -1) {
@@ -116,128 +119,122 @@ const detectWindow = () => {
   }
 };
 
-
 /**
  * Take screenshot of the windows with given window bounds on windows os
  * @param {Object} bounds Window bounds
  * @return {Object} Screenshot in the form of Jimp image object
  */
- const grabScreenshotWindows = ({ left, top, right, bottom }) => {
-    const x = left;
-    const y = top;
-    const width = right - top;
-    const height = bottom - top;
-    const Jimp = require("jimp");
-    const screenshotDesktop = require("screenshot-desktop")
-    return screenshotDesktop()
-      .then((img) => {
-        return Jimp.read(img);
-      })
-      .then((img) => {
-        return img.crop(x, y, width, height);
-      })
-      .then((img) => {
-        return img.getBase64Async(Jimp.MIME_PNG);
-      })
-      .then((img) => {
-        return img.replace("data:image/png;base64,", "")
-      });
-  };
-  
+const grabScreenshotWindows = ({ left, top, right, bottom }) => {
+  const x = left;
+  const y = top;
+  const width = right - top;
+  const height = bottom - top;
+  const Jimp = require("jimp");
+  const screenshotDesktop = require("screenshot-desktop");
+  return screenshotDesktop()
+    .then((img) => {
+      return Jimp.read(img);
+    })
+    .then((img) => {
+      return img.crop(x, y, width, height);
+    })
+    .then((img) => {
+      return img.getBase64Async(Jimp.MIME_PNG);
+    })
+    .then((img) => {
+      return img.replace("data:image/png;base64,", "");
+    });
+};
 
 const grabScreenshotMac = (windowId) => {
-   
-    return new Promise((resolve, reject) => {
-      
-        let img;
-  
-        const tempPath = `${new Date().valueOf()}.jpg`;
-      
-      exec(`screencapture -l ${windowId} -o -x -t jpg '${tempPath}'`, (error) => {
-        if (error) {
-          reject(error);
-        }
-        const { readFile, unlink } = require("fs").promises;
+  return new Promise((resolve, reject) => {
+    let img;
 
-        readFile(tempPath)
+    const tempPath = `${new Date().valueOf()}.jpg`;
+
+    exec(`screencapture -l ${windowId} -o -x -t jpg '${tempPath}'`, (error) => {
+      if (error) {
+        reject(error);
+      }
+      const { readFile, unlink } = require("fs").promises;
+
+      readFile(tempPath)
         .then((file) => {
-          img = Buffer.from(file).toString('base64');
-          // Delete saved screenshot
-          return unlink(tempPath);
-        })
-        .then(() => resolve(img))
-        .catch((err) => reject(err));      
-    });
-    });
-  }
-
-const grabScreenshotLinux = (windowId) => {
-
-    return new Promise((resolve, reject) => {
-        let img;
-  
-      const tempPath = `${new Date().valueOf()}.jpg`;
-  
-      exec(`import -window ${windowId} ${tempPath}`, (error) => {
-        if (error) {
-          reject(error);
-        }
-
-        const { readFile, unlink } = require("fs").promises;
-
-        readFile(tempPath)
-        .then((file) => {
-          img = Buffer.from(file).toString('base64');
+          img = Buffer.from(file).toString("base64");
           // Delete saved screenshot
           return unlink(tempPath);
         })
         .then(() => resolve(img))
         .catch((err) => reject(err));
-      });
     });
-  }
+  });
+};
 
+const grabScreenshotLinux = (windowId) => {
+  return new Promise((resolve, reject) => {
+    let img;
+
+    const tempPath = `${new Date().valueOf()}.jpg`;
+
+    exec(`import -window ${windowId} ${tempPath}`, (error) => {
+      if (error) {
+        reject(error);
+      }
+
+      const { readFile, unlink } = require("fs").promises;
+
+      readFile(tempPath)
+        .then((file) => {
+          img = Buffer.from(file).toString("base64");
+          // Delete saved screenshot
+          return unlink(tempPath);
+        })
+        .then(() => resolve(img))
+        .catch((err) => reject(err));
+    });
+  });
+};
 
 const getImage = (windowId, windowBounds) => {
+  try {
+    if (process.platform === "win32")
+      return grabScreenshotWindows(windowBounds);
+    else if (process.platform === "linux") return grabScreenshotLinux(windowId);
+    return grabScreenshotMac(windowId);
+  } catch (err) {
+    return Promise.reject(err);
+  }
+};
+
+const extractText = async (KEY_PATH, emrConfig = []) => {
+  API_KEY_PATH = KEY_PATH;
+  emrConfigs = emrConfig?.config;
+
+  const window = detectWindow();
+
+  if (window) {
     try {
-      if (process.platform === "win32")
-        return grabScreenshotWindows(windowBounds);
-      else if(process.platform === "linux") 
-        return grabScreenshotLinux(windowId);
-      return grabScreenshotMac(windowId);
-    } catch (err) {
-      return Promise.reject(err);
+      let img = await getImage(window.windowId, window.windowBounds);
+      if(!img) return;
+      let texts = await getText(API_KEY_PATH, img);
+      if(!texts) return;
+      return texts; 
+    } catch (e) {
+      console.log(error);
     }
+  }
 };
 
-const extractText = (KEY_PATH, emrConfig = []) => {
-    API_KEY_PATH = KEY_PATH;
-    emrConfigs = emrConfig;
-
-    let texts = [];
-    const window = detectWindow();
-
-    if(window) {
-        getImage(window.windowId, window.windowBounds).then((img) => {
-            getText(API_KEY_PATH, img)
-            .then(data => {
-                // texts = data;
-                console.log(texts);
-                return data;
-            })
-            .catch(() => console.log("Google Vision: Unable to get Text"));
-        }).catch((err) => console.log(err))
-    }
-};
-
-setTimeout(() => {
-    let texts = extractText("../test/api_key.json", [
-        {active: true,
+setTimeout(async () => {
+  let texts = await extractText("../test/api_key.json", {
+    config: [
+      {
+        active: true,
         displayName: "ExtractText",
-        cropPercentages: { top: 10, right: 70, left: 5, bottom: 50 },
-        windowWildCard: "extractText",
-        emrKey: "EXTRACT_TEXT",
-    regex: true}
-    ]);
-    // if(texts !== undefined) texts.forEach(text => console.log(text.description));
+        windowWildCard: "Visual",
+        emrKey: "EXTRACT_TEXT"
+      },  
+  ]});
+  if (texts !== undefined)
+    texts.forEach((text) => console.log(text.description));
 }, 5000);
