@@ -44,7 +44,6 @@ const rectBufferToObject = (buffer) => {
  * @returns {Object} Active window details
  */
 const getActiveWindowWin32 = () => {
-  console.log("in detect window");
   const { U } = require("win32-api");
   const u32 = U.load([
     "GetForegroundWindow",
@@ -61,7 +60,7 @@ const getActiveWindowWin32 = () => {
 
   const title = titleBuffer.toString("ucs-2").replace(/\0/g, "");
   const bounds = rectBufferToObject(rectBuffer);
-  // console.log(title, bounds);
+  
   return { title, bounds };
 };
 
@@ -79,7 +78,7 @@ const detectWindow = () => {
     } else if (process.platform === "darwin" || process.platform === "linux") {
       window = require("active-win").sync();
     }
-    // console.log(window);
+    
     let { title } = window;
     const { bounds, id } = window;
 
@@ -223,7 +222,8 @@ const extractText = async (APIKEY, emrConfig = null) => {
       if(!texts) return;
       return texts; 
     } catch (e) {
-      console.log(e);
+      console.error(e);
+      return;
     }
   }
 };

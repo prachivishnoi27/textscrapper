@@ -1,6 +1,6 @@
 {
   "name": "textscrapper",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Get text scrapped from any active window on your desktop",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,11 @@
   "keywords": [
     "screenshot",
     "extract text",
-    "google cloud vision API"
+    "google cloud vision API",
+    "text",
+    "images",
+    "active",
+    "window"
   ],
   "author": "Prachi Vishnoi",
   "license": "MIT",

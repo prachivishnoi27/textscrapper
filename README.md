@@ -10,12 +10,17 @@ npm module for extracting text from any window active on your computer
 
   
 	For Mac and Linux:  
+    - active-win   
 ```npm install active-win```
 
 	For Windows:  
-	```npm install jimp screenshot-desktop```
+    - jimp
+    - screenshot-desktop
+    - win32-api  
+	```npm install jimp screenshot-desktop win32-api```
 	
-	Linux users may need to install ImageMagicK on your system
+	Linux users may need to install ImageMagicK on your system:   
+```sudo apt install imagemagick```
   
 
 ## Install
