@@ -1,10 +1,13 @@
 const getText = require("./googleVisionAPI");
 const { exec, execSync } = require("child_process");
 
+//  API KEY file path
 let API_KEY_PATH = "";
 
+// Emr configs
 let emrConfigs = [];
 
+// Osascript to detect title of active window in case the active win fails
 const osascript = `
 global frontApp, frontAppName, windowTitle
 
@@ -206,9 +209,9 @@ const getImage = (windowId, windowBounds) => {
   }
 };
 
-const extractText = async (KEY_PATH, emrConfig = []) => {
-  API_KEY_PATH = KEY_PATH;
-  emrConfigs = emrConfig?.config;
+const extractText = async (APIKEY, emrConfig = null) => {
+  API_KEY_PATH = APIKEY;
+  if(emrConfig !== null) emrConfigs = emrConfig.config;
 
   const window = detectWindow();
 
@@ -225,16 +228,4 @@ const extractText = async (KEY_PATH, emrConfig = []) => {
   }
 };
 
-setTimeout(async () => {
-  let texts = await extractText("../test/api_key.json", {
-    config: [
-      {
-        active: true,
-        displayName: "ExtractText",
-        windowWildCard: "Visual",
-        emrKey: "EXTRACT_TEXT"
-      },  
-  ]});
-  if (texts !== undefined)
-    texts.forEach((text) => console.log(text.description));
-}, 5000);
+module.exports = extractText;

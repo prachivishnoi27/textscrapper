@@ -1,6 +1,6 @@
 {
   "name": "textscrapper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Get text scrapped from any active window on your desktop",
   "main": "index.js",
   "scripts": {
@@ -16,9 +16,5 @@
   "bugs": {
     "url": "https://github.com/prachivishnoi27/textscrapper/issues"
   },
-  "homepage": "https://github.com/prachivishnoi27/textscrapper#readme",
-  "dependencies": {
-    "@google-cloud/vision": "^2.3.5",
-    "active-win": "^7.6.0"
-  }
+  "homepage": "https://github.com/prachivishnoi27/textscrapper#readme"
 }
