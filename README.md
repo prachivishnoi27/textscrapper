@@ -30,24 +30,26 @@ Before you begin
 
 ## Usage
 ```
-async printText () => {
-	let texts = await extractText(API_KEY_PATH, {
-		config: [
-		{
-			active: true,
-			displayName: "Google Chrome",
-			windowWildCard: "Google",
-			emrKey: "GOOGLE"
-		},
-		{
-			active: true,
-			displayName: "Visual Studio Code",
-			windowWildCard: "Code"
-			emrKey: "VSCODE"	
-		}
-	]});
-	texts.forEach((text) => console.log(text.description));
-}
+const textscrapper = require("textscrapper");
+
+(async () => {
+    let texts = await textscrapper(API_KEY_PATH, {
+        config: [
+        {
+            active: true,
+            displayName: "Google Chrome",
+            windowWildCard: "Google",
+            emrKey: "GOOGLE"
+        },
+        {
+            active: true,
+            displayName: "Visual Studio Code",
+            windowWildCard: "Code",
+            emrKey: "VSCODE"	
+        }
+    ]});
+    texts.forEach((text) => console.log(text.description));
+})();
 ```
 
 - First argument i.e API_KEY_PATH is the path of json file downloaded after you have successfully set credentials for Google Cloud Vision API.

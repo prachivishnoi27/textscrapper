@@ -223,7 +223,7 @@ const extractText = async (APIKEY, emrConfig = null) => {
       if(!texts) return;
       return texts; 
     } catch (e) {
-      console.log(error);
+      console.log(e);
     }
   }
 };
