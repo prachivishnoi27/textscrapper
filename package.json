@@ -1,6 +1,6 @@
 {
   "name": "textscrapper",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Get text scrapped from any active window on your desktop",
   "main": "index.js",
   "scripts": {

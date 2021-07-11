@@ -42,9 +42,9 @@ const textscrapper = require("textscrapper");
 
 (async () => {
     // path to the api_key downloaded after setting up google vision api credentials
-    textscrapper.set_api_key = API_KEY_PATH;
+    textscrapper.set_api_key(API_KEY_PATH);
     // optional
-    textscrapper.set_config = {
+    textscrapper.set_config({
         config: [
         {
             active: true,
@@ -58,9 +58,13 @@ const textscrapper = require("textscrapper");
             windowWildCard: "Code",
             emrKey: "VSCODE"	
         }
-    ]};
-    let texts = await textscrapper.extractText();
-    texts.forEach((text) => console.log(text.description));
+    ]});
+    try {
+        let texts = await textscrapper.extractText();
+        texts.forEach((text) => console.log(text.description));
+    } catch (e) {
+        console.error(e);
+    } 
 })();
 ```
 
