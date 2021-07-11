@@ -6,17 +6,20 @@ npm module for extracting text from any window active on your computer
 ### Peer Dependencies
 
 - Google Cloud Vision API  
+
 	```npm install @google-cloud/vision```
 
   
 	For Mac and Linux:  
     - active-win   
-```npm install active-win```
+
+    ```npm install active-win```
 
 	For Windows:  
     - jimp
     - screenshot-desktop
     - win32-api  
+    
 	```npm install jimp screenshot-desktop win32-api```
 	
 	Linux users may need to install ImageMagicK on your system:   
@@ -38,7 +41,10 @@ Before you begin
 const textscrapper = require("textscrapper");
 
 (async () => {
-    let texts = await textscrapper(API_KEY_PATH, {
+    // path to the api_key downloaded after setting up google vision api credentials
+    textscrapper.set_api_key = API_KEY_PATH;
+    // optional
+    textscrapper.set_config = {
         config: [
         {
             active: true,
@@ -52,7 +58,8 @@ const textscrapper = require("textscrapper");
             windowWildCard: "Code",
             emrKey: "VSCODE"	
         }
-    ]});
+    ]};
+    let texts = await textscrapper.extractText();
     texts.forEach((text) => console.log(text.description));
 })();
 ```
