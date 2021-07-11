@@ -27,7 +27,7 @@ return {windowTitle}
 
 const set_api_key = path => API_KEY_PATH = path;
 
-const set_config = emrconfig => emrConfigs = emrconfig; 
+const set_config = emrconfig => emrConfigs = emrconfig.config; 
 
 /**
  * Converts a rect buffer to a rect object
