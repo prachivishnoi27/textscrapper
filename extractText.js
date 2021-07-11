@@ -2,7 +2,7 @@ const getText = require("./googleVisionAPI");
 const { exec, execSync } = require("child_process");
 
 //  API KEY file path
-let API_KEY_PATH = "";
+let API_KEY_PATH = undefined;
 
 // Emr configs
 let emrConfigs = [];
@@ -24,6 +24,10 @@ end tell
 
 return {windowTitle}
 `;
+
+const set_api_key = path => API_KEY_PATH = path;
+
+const set_config = emrconfig => emrConfigs = emrconfig; 
 
 /**
  * Converts a rect buffer to a rect object
@@ -208,10 +212,10 @@ const getImage = (windowId, windowBounds) => {
   }
 };
 
-const extractText = async (APIKEY, emrConfig = null) => {
-  API_KEY_PATH = APIKEY;
-  if(emrConfig !== null) emrConfigs = emrConfig.config;
-
+const extractText = async () => {
+  if(API_KEY_PATH === undefined) {
+    return "Api key path not found";
+  }
   const window = detectWindow();
 
   if (window) {
@@ -228,4 +232,4 @@ const extractText = async (APIKEY, emrConfig = null) => {
   }
 };
 
-module.exports = extractText;
+module.exports = { set_api_key, set_config, extractText};
