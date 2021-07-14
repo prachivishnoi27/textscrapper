@@ -1,10 +1,10 @@
-const getText = require("./googleVisionAPI");
+const getTextFromGoogleVisionAPI = require("./googleVisionAPI");
 const { exec, execSync } = require("child_process");
 const { readFile, unlink } = require("fs").promises;
 const Jimp = require("jimp");
 
 //  API KEY file path
-let API_KEY_PATH = undefined;
+let API_KEY = undefined;
 
 // Emr configs
 let emrConfigs = [];
@@ -30,9 +30,9 @@ end tell
 return {windowTitle}
 `;
 
-const set_api_key = (path) => (API_KEY_PATH = path);
+const setApiKey = key => API_KEY = key;
 
-const set_config = (emrconfig) => (emrConfigs = emrconfig.config);
+const setConfig = ({ config }) => emrConfigs = config;
 
 /**
  * Converts a rect buffer to a rect object
@@ -165,12 +165,6 @@ const grabScreenshotWindows = ({ left, top, right, bottom }) => {
     })
     .then((img) => {
       return img.crop(x, y, width, height);
-    })
-    .then((img) => {
-      return img.getBase64Async(Jimp.MIME_PNG);
-    })
-    .then((img) => {
-      return img.replace("data:image/png;base64,", "");
     });
 };
 
@@ -184,14 +178,17 @@ const grabScreenshotMac = (windowId) => {
       if (error) {
         reject(error);
       }
-      const { readFile, unlink } = require("fs").promises;
 
       readFile(tempPath)
-        .then((file) => {
-          img = Buffer.from(file).toString("base64");
+        .then((img) => {
+          screenshot = img;
           // Delete saved screenshot
           return unlink(tempPath);
         })
+        // Create Jimp object
+        .then(() => Jimp.read(screenshot))
+        // Scale down screenshot
+        .then((img) => img.scale(0.5))
         .then(() => resolve(img))
         .catch((err) => reject(err));
     });
@@ -247,50 +244,76 @@ const isScreenshotDifferent = (screenshot) => {
   return Boolean(Jimp.diff(screenshot, lastScreenshot, 0).percent);
 };
 
-const extractText = async () => {
+const getBase64Image = async ({ windowId, windowBounds, cropPercentages }) => {
+  try {
+    let image = await getImage(windowId, windowBounds);
+
+    // image can't be taken
+    if (!image) {
+      return new Error("Screenshot can't be taken");
+    }
+
+    if (cropPercentages) {
+      // Crop the screenshot
+      const croppedScreenshot = cropScreenshot(
+        image.clone(), // Sending clone of origional screenshot as we need origional screenshot
+        cropPercentages
+      );
+
+      // Compare cropped screenshot with last croppped screenshot
+      if (!isScreenshotDifferent(croppedScreenshot)) {
+        // Screenshot were same
+        return new Error("Screenshot same as previous screenshot");
+      }
+
+      // Save cropped screenshot as lastScreenshot for comparision in next iteration
+      lastScreenshot = croppedScreenshot;
+    }
+    // Return origional screenshot in the form of base64 string
+    image = await image.getBase64Async("image/png");
+
+    image = image.replace("data:image/png;base64,", "");
+    return image;
+  } catch (e) {
+    return e;
+  }
+};
+
+const extractTextFromImage = async (base64Image, maxResults) => {
   // check if API KEY is set or not
-  if (API_KEY_PATH === undefined) {
-    return new Error("Api key path not found");
+  if (API_KEY === undefined) {
+    return new Error("Api key not found");
+  }
+
+  try {
+    const texts = await getTextFromGoogleVisionAPI(API_KEY, base64Image, maxResults);
+
+    if (!texts) {
+      return new Error("Text can't be extracted from API");
+    }
+
+    return texts;
+  } catch (e) {
+    return e;
+  }
+};
+
+const extractText = async (maxResults) => {
+  // check if API KEY is set or not
+  if (API_KEY === undefined) {
+    return new Error("Api key not found");
   }
 
   const window = detectWindow();
 
   if (window) {
     try {
-      let image = await getImage(window.windowId, window.windowBounds);
+      const base64Image = await getBase64Image(window);
 
-      // image can't be taken
-      if (!image) {
-        return new Error("Screenshot can't be taken");
-      }
-
-      if (window.cropPercentages) {
-        // Crop the screenshot
-        const croppedScreenshot = cropScreenshot(
-          image.clone(), // Sending clone of origional screenshot as we need origional screenshot
-          window.cropPercentages
-        );
-
-        // Compare cropped screenshot with last croppped screenshot
-        if (!isScreenshotDifferent(croppedScreenshot)) {
-          // Screenshot were same
-          return new Error("Screenshot same as previous screenshot");
-        }
-
-        // Save cropped screenshot as lastScreenshot for comparision in next iteration
-        lastScreenshot = croppedScreenshot;
-      }
-      // Return origional screenshot in the form of base64 string
-      image = await image.getBase64Async("image/png");
-
-      // .then((img) => img = Buffer.from(file).toString("base64"))
-
-      image = image.replace("data:image/png;base64,", "");
-
-      let texts = await getText(API_KEY_PATH, image);
+      const texts = await getTextFromGoogleVisionAPI(API_KEY, base64Image, maxResults);
 
       if (!texts) {
-        return new Error();
+        return new Error("Text can't be extracted from API");
       }
 
       return texts;
@@ -300,4 +323,11 @@ const extractText = async () => {
   }
 };
 
-module.exports = { set_api_key, set_config, extractText };
+module.exports = {
+  setApiKey,
+  setConfig,
+  extractTextFromImage,
+  extractText,
+  getBase64Image,
+  detectWindow,
+};
