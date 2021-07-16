@@ -1,31 +1,28 @@
-# textsrcapper
+# textscrapper
 
 npm module for extracting text from any window active on your computer
 
 
 ### Peer Dependencies
+- Axios, jimp
+    
+    
+    ```npm install axios jimp```
 
-- Google Cloud Vision API  
-
-	```npm install @google-cloud/vision```
-
-  
-	For Mac and Linux:  
-    - active-win   
+For Mac and Linux:  
+ - active-win
 
     ```npm install active-win```
 
-	For Windows:  
-    - jimp
-    - screenshot-desktop
-    - win32-api  
+For Windows:  
+- screenshot-desktop
+- win32-api  
     
-	```npm install jimp screenshot-desktop win32-api```
+	```npm install screenshot-desktop win32-api```
 	
-	Linux users may need to install ImageMagicK on your system:   
-```sudo apt install imagemagick```
+Linux users may need to install ImageMagicK:  
+    ```sudo apt install imagemagick```
   
-
 ## Install
 ```npm install textscrapper```
 
@@ -41,35 +38,51 @@ Before you begin
 const textscrapper = require("textscrapper");
 
 (async () => {
-    // path to the api_key downloaded after setting up google vision api credentials
-    textscrapper.set_api_key(API_KEY_PATH);
-    // optional
-    textscrapper.set_config({
+    // api key of google cloud project
+    textscrapper.setApiKey(API_KEY);
+
+    // optional, sets emrconfigs to identify which window to detect or not
+    // if not set, then it will detect all active windows
+    textscrapper.setConfig({
         config: [
         {
             active: true,
             displayName: "Google Chrome",
             windowWildCard: "Google",
-            emrKey: "GOOGLE"
+            emrKey: "GOOGLE",
+            cropPercentages: { top: 20, right: 10, left: 10, bottom: 0 }
         },
         {
             active: true,
             displayName: "Visual Studio Code",
             windowWildCard: "Code",
-            emrKey: "VSCODE"	
+            emrKey: "VSCODE",
+            cropPercentages: { top: 10, right: 70, left: 5, bottom: 50 }
         }
     ]});
+
+    // limit maximum results
+    const maxResults = 5;
     try {
-        let texts = await textscrapper.extractText();
-        texts.forEach((text) => console.log(text.description));
+        // extract text from active windows
+        let texts = await textscrapper.extractText(maxResults);
+        console.log(texts);
     } catch (e) {
         console.error(e);
     } 
 })();
-```
 
-- First argument i.e API_KEY_PATH is the path of json file downloaded after you have successfully set credentials for Google Cloud Vision API.
-- Second argument is object containing config key, which thereafter contains  array of information of all the windows you want to extract text of. This argument is optional, if you did not pass anything it will allow all active windows.
+// Other Methods
+
+// Detect active window on your computer, returns window object.
+const window = textscrapper.detectWindow();
+
+// Get base64image of active window
+const base64image = await textscrapper.getBase64Image(window);
+
+// getText from base64image, {maxResults}: limit maximum results
+const texts = await textscrapper.extractTextFromImage(base64Image, maxResults);
+``` 
 
 ## License
 MIT
