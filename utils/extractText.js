@@ -315,7 +315,7 @@ const extractTextFromImage = async (base64Image, maxResults) => {
       return new Error("Text can't be extracted");
     }
 
-    return texts;
+    return texts.data;
   } catch (e) {
     return e;
   }
@@ -337,7 +337,7 @@ const extractText = async (maxResults) => {
     try {
       const base64Image = await getBase64Image(window);
 
-      if(base64Image) {
+      if(!base64Image) {
         return new Error("Image not found");
       }
       
@@ -347,7 +347,7 @@ const extractText = async (maxResults) => {
         return new Error("Text can't be extracted");
       }
 
-      return texts;
+      return texts.data;
     } catch (e) {
       return e;
     }
