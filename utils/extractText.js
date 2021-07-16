@@ -1,4 +1,4 @@
-const getTextFromGoogleVisionAPI = require("./googleVisionAPI");
+const getText = require("./googleVisionAPI");
 const { exec, execSync } = require("child_process");
 const { readFile, unlink } = require("fs").promises;
 const Jimp = require("jimp");
@@ -30,8 +30,10 @@ end tell
 return {windowTitle}
 `;
 
+// Set Api key
 const setApiKey = key => API_KEY = key;
 
+// set emrconfig array
 const setConfig = ({ config }) => emrConfigs = config;
 
 /**
@@ -168,6 +170,11 @@ const grabScreenshotWindows = ({ left, top, right, bottom }) => {
     });
 };
 
+/**
+ * Takes screenshot of window with provided windowId on MacOS
+ * @param {number} windowId Window ID
+ * @returns {Object} Screenshot in the form of Jimp image object
+ */
 const grabScreenshotMac = (windowId) => {
   return new Promise((resolve, reject) => {
     let img;
@@ -195,6 +202,11 @@ const grabScreenshotMac = (windowId) => {
   });
 };
 
+/**
+ * Takes screenshot of window with provided windowId on Linux
+ * @param {number} windowId Window ID
+ * @returns {Object} Screenshot in the form of Jimp image object
+ */
 const grabScreenshotLinux = (windowId) => {
   return new Promise((resolve, reject) => {
     let screenshot = null;
@@ -244,6 +256,11 @@ const isScreenshotDifferent = (screenshot) => {
   return Boolean(Jimp.diff(screenshot, lastScreenshot, 0).percent);
 };
 
+/**
+ * Takes active window object
+ * @param {Object} window
+ * @returns {String} Return image in the form of base64 string
+ */
 const getBase64Image = async ({ windowId, windowBounds, cropPercentages }) => {
   try {
     let image = await getImage(windowId, windowBounds);
@@ -279,6 +296,12 @@ const getBase64Image = async ({ windowId, windowBounds, cropPercentages }) => {
   }
 };
 
+/**
+ * Takes base64 image and max result as input
+ * @param {String} base64Image image as base64 string
+ * @param {number} maxResults maximum count of results
+ * @returns {Object} object containing texts from Google Vision
+ */
 const extractTextFromImage = async (base64Image, maxResults) => {
   // check if API KEY is set or not
   if (API_KEY === undefined) {
@@ -286,10 +309,10 @@ const extractTextFromImage = async (base64Image, maxResults) => {
   }
 
   try {
-    const texts = await getTextFromGoogleVisionAPI(API_KEY, base64Image, maxResults);
+    const texts = await getText(API_KEY, base64Image, maxResults);
 
     if (!texts) {
-      return new Error("Text can't be extracted from API");
+      return new Error("Text can't be extracted");
     }
 
     return texts;
@@ -298,6 +321,10 @@ const extractTextFromImage = async (base64Image, maxResults) => {
   }
 };
 
+/**
+ * @param {number} maxResults maximum count of results
+ * @returns {Object} object containing texts from Google Vision
+ */
 const extractText = async (maxResults) => {
   // check if API KEY is set or not
   if (API_KEY === undefined) {
@@ -310,10 +337,14 @@ const extractText = async (maxResults) => {
     try {
       const base64Image = await getBase64Image(window);
 
-      const texts = await getTextFromGoogleVisionAPI(API_KEY, base64Image, maxResults);
+      if(base64Image) {
+        return new Error("Image not found");
+      }
+      
+      const texts = await getText(API_KEY, base64Image, maxResults);
 
       if (!texts) {
-        return new Error("Text can't be extracted from API");
+        return new Error("Text can't be extracted");
       }
 
       return texts;
