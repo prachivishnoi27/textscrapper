@@ -80,7 +80,7 @@ const window = textscrapper.detectWindow();
 // Get base64image of active window
 const base64image = await textscrapper.getBase64Image(window);
 
-// getText from base64image, 
+// getText from base64image, {maxResults}: limit maximum results
 const texts = await textscrapper.extractTextFromImage(base64Image, maxResults);
 ``` 
 
