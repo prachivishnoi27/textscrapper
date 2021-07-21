@@ -1,3 +1,3 @@
-const extractText = require('./utils/extractText.js');
+const extractText = require('./utils/extractText');
 
 module.exports = extractText;
