@@ -1,4 +1,5 @@
 # textscrapper
+<p><a href="https://github.com/prachivishnoi27/textscrapper/blob/main/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/prachivishnoi27/textscrapper"></a>  <a href="https://github.com/prachivishnoi27/textscrapper/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/prachivishnoi27/textscrapper"></a></p>
 
 npm module for extracting text from any window active on your computer
 
@@ -34,7 +35,7 @@ Before you begin
 4.  [Set up authentication with a service account](https://cloud.google.com/docs/authentication/getting-started)  so you can access the API from your local workstation.
 
 ## Usage
-```
+```js
 const textscrapper = require("textscrapper");
 
 (async () => {
